@@ -181,7 +181,7 @@ async function DBConnection(url) {
   }
   
 }
-DBConnection(process.env.url);
+DBConnection(process.env.MONGODB_URL);
 
 app.listen(process.env.PORT, () => {
   console.log('server started');
