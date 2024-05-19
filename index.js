@@ -20,16 +20,25 @@ import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import Stripe from "stripe";
 import path from "path";
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app=express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(express.json());
 
 app.use(cors({
   exposedHeaders: ["X-Total-Count"]
 }))
+
+app.get("/", (req, res) => {
+   app.use(express.static(path.resolve(__dirname, "frontend", "build")));
+   res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"));
+  });
 
 // JWT options
 
@@ -39,7 +48,6 @@ opts.secretOrKey = process.env.JWT_SECRET_KEY;
 
 //middlewares
 
-app.use(express.static('build'));
 app.use(cookieParser());
 app.use(
   session({
@@ -59,11 +67,6 @@ app.use('/users', isAuth(), usersRouter);
 app.use('/auth', authRouter);
 app.use('/cart', isAuth(), cartRouter);
 app.use('/orders', isAuth(), orderRouter);
-
-// this line we add to make react router work in case of other routes doesnt match
-app.get('*', (req, res) =>
-  res.sendFile(path.resolve('build', 'index.html'))
-);
 
 // Passport Strategies
 passport.use(
@@ -181,7 +184,7 @@ async function DBConnection(url) {
   }
   
 }
-DBConnection(process.env.url);
+DBConnection(process.env.MONGODB_URL);
 
 app.listen(process.env.PORT, () => {
   console.log('server started');
